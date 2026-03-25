@@ -1,27 +1,30 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useState } from "react";
 import { Property } from "@/lib/types";
 import { MOCK_PROPERTIES } from "@/lib/data";
 import PropertySidebar from "@/components/PropertySidebar";
 import PropertyDetail from "@/components/PropertyDetail";
+import Header from "@/components/Header";
 
-// Dynamically import the map to avoid SSR issues with mapbox-gl
 const MapComponent = dynamic(() => import("@/components/MapComponent"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-100">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
         <span className="text-sm text-gray-500">Loading map…</span>
       </div>
     </div>
   ),
 });
 
-export default function Home() {
+const FOR_RENT_PROPERTIES = MOCK_PROPERTIES.filter(
+  (p) => p.status === "for_rent"
+);
+
+export default function RentPage() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
   );
@@ -36,81 +39,43 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Top Navigation Bar */}
-      <header className="flex-shrink-0 h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-4 shadow-sm z-10">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🏡</span>
-          <span className="font-bold text-gray-900 text-base">
-            Real Estate Map
-          </span>
-        </div>
-        <div className="flex-1" />
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span className="hidden sm:inline">
-            {MOCK_PROPERTIES.length} properties listed
-          </span>
-          <span className="bg-emerald-100 text-emerald-700 font-medium px-2.5 py-1 rounded-full">
-            Miami, FL
-          </span>
-        </div>
-        <nav className="hidden md:flex items-center gap-4 text-sm text-gray-600">
-          <Link href="/buy" className="hover:text-emerald-600 transition-colors">
-            Buy
-          </Link>
-          <Link href="/rent" className="hover:text-emerald-600 transition-colors">
-            Rent
-          </Link>
-          <Link href="/sell" className="hover:text-emerald-600 transition-colors">
-            Sell
-          </Link>
-        </nav>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/sign-in"
-            className="border border-gray-200 text-gray-700 hover:border-emerald-400 hover:text-emerald-600 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/sign-up"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
-            Sign Up
-          </Link>
-        </div>
-      </header>
+      <Header />
+
+      {/* Page title strip */}
+      <div className="flex-shrink-0 bg-blue-50 border-b border-blue-100 px-4 py-2 flex items-center gap-3">
+        <span className="text-blue-700 font-semibold text-sm">
+          🏢 Homes for Rent
+        </span>
+        <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+          {FOR_RENT_PROPERTIES.length} listings
+        </span>
+      </div>
 
       {/* Main Content: Sidebar + Map */}
       <main className="flex flex-1 overflow-hidden">
-        {/* Property Sidebar */}
         <PropertySidebar
-          properties={MOCK_PROPERTIES}
+          properties={FOR_RENT_PROPERTIES}
           selectedPropertyId={selectedProperty?.id ?? null}
           onPropertySelect={handlePropertySelect}
         />
 
-        {/* Map */}
         <div className="flex-1 relative">
           <MapComponent
-            properties={MOCK_PROPERTIES}
+            properties={FOR_RENT_PROPERTIES}
             selectedPropertyId={selectedProperty?.id ?? null}
             onPropertySelect={handlePropertySelect}
           />
 
-          {/* Map Legend */}
           <div className="absolute bottom-8 right-4 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg px-3 py-2 text-xs space-y-1.5 z-10">
             <p className="font-semibold text-gray-700 text-[11px] uppercase tracking-wide mb-1">
               Legend
             </p>
-            <LegendItem color="#10b981" label="For Sale" />
             <LegendItem color="#3b82f6" label="For Rent" />
-            <LegendItem color="#f59e0b" label="Pending" />
-            <LegendItem color="#6b7280" label="Sold" />
             <div className="border-t border-gray-200 pt-1.5 mt-1">
               <div className="flex items-center gap-1.5">
                 <div
                   className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
-                  style={{ background: "#10b981" }}
+                  style={{ background: "#3b82f6" }}
                 >
                   3
                 </div>
@@ -121,7 +86,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Property Detail Modal */}
       {selectedProperty && (
         <PropertyDetail
           key={selectedProperty.id}
